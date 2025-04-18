@@ -1,31 +1,42 @@
 package com.jomc;
 
-// import androidx.appcompat.app.AppCompatActivity;
-
-// public class MainActivity extends AppCompatActivity
-// {
-//     @Override
-//     protected void onCreate(Bundle savedintanceState) {
-//         super.onCreate(savedIntanceState);
-//         setContentView(R.layout.activity_main);
-//     }
-// }
-
-
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
+    final String ip = "192.168.1.12";
+    final int port = 6742;
+
+    ORGB orgb;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Button button = findViewById(R.id.my_button);
-        // button.setOnClickListener(view -> 
-        //     Toast.makeText(this, "Button clicked!", Toast.LENGTH_SHORT).show()
-        // );
+        this.orgb = new ORGB(ip, port, this);
+
+        Button con_button = findViewById(R.id.connect_button);
+        Button dis_button = findViewById(R.id.disconnect_button);
+
+        con_button.setOnClickListener(this::onButtonClickConnect);
+
+        dis_button.setOnClickListener((v) -> {
+            orgb.closeConn();
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (orgb.isConnAlive()) {
+            orgb.closeConn();
+        }
+    }
+
+    private void onButtonClickConnect(View v) {
+        orgb.updateControllers();
     }
 }
