@@ -14,41 +14,41 @@
       }
     );
 
-    sdkVersion = "35";
-    buildToolsVersion = "35.0.0";
-    platformToolsVersion = "35.0.1";
+    lib = pkgs.lib;
 
-    androidComposition = pkgs.androidenv.composeAndroidPackages {
-      includeNDK = false;
-      includeSystemImages = false;
-      includeEmulator = false;
-      platformVersions = [sdkVersion];
-      buildToolsVersions = [buildToolsVersion];
-      platformToolsVersion = platformToolsVersion;
-      extraLicenses = [
-        "android-sdk-preview-license"
-        "android-googletv-license"
-        "android-sdk-arm-dbt-license"
-        "google-gdk-license"
-        "intel-android-extra-license"
-        "intel-android-sysimage-license"
-        "mips-android-sysimage-license"
-      ];
-    };
-    androidSdk = androidComposition.androidsdk;
+    buildToolsVersion = "35.0.0";
+    sdkVersion = "35";
+    androidSdk = let
+      platformToolsVersion = "35.0.1";
+
+      androidComposition = pkgs.androidenv.composeAndroidPackages {
+        includeNDK = false;
+        includeSystemImages = false;
+        includeEmulator = false;
+        platformVersions = [sdkVersion];
+        buildToolsVersions = [buildToolsVersion];
+        platformToolsVersion = platformToolsVersion;
+      };
+    in
+      androidComposition.androidsdk;
+
+    pname = "jomc";
   in {
     devShells.${system}.default = pkgs.mkShell rec {
       packages = with pkgs; [
         android-studio
-        android-tools # adb
+        android-tools
         gradle
         jdt-language-server
-        (pkgs.writers.writeBashBin "prun" ''
-          dev="192.168.1.2:42801"
-          ./gradlew build
-          adb -s $dev install app/build/outputs/apk/debug/app-debug.apk
-          adb -s $dev shell am start -n com.jomc/.MainActivity
-        '')
+
+        (let
+          adb = lib.getExe' pkgs.android-tools "adb";
+        in
+          pkgs.writers.writeBashBin "prun" ''
+            dev="192.168.1.2:40063"
+            ${adb} -s $dev install app/build/outputs/apk/debug/app-debug.apk
+            ${adb} -s $dev shell am start -n com.${pname}/.MainActivity
+          '')
       ];
 
       ANDROID_SDK_ROOT = "${androidSdk}/libexec/android-sdk";
