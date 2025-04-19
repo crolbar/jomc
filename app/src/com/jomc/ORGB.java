@@ -43,12 +43,13 @@ public class ORGB
         this.doneSettingColor = true;
     }
 
-    public void connect(String host, int port)
+    public void connect(String host, int port, Runnable r)
     {
         executor.submit(() -> {
             try {
                 this.socket = new Socket(host, port);
                 sendMsg(NET_PACKET_ID_SET_CLIENT_NAME, 0, client_name);
+                new Handler(Looper.getMainLooper()).post(r);
             } catch (IOException e) {
                 Log.i("tag", e.toString());
                 new Handler(Looper.getMainLooper())
@@ -59,16 +60,7 @@ public class ORGB
                                            e.getMessage(),
                                          Toast.LENGTH_SHORT)
                                .show());
-                return;
             }
-
-            new Handler(Looper.getMainLooper())
-              .post(()
-                      -> Toast
-                           .makeText(this.context,
-                                     "Connection opened",
-                                     Toast.LENGTH_SHORT)
-                           .show());
         });
     }
 
