@@ -15,6 +15,21 @@ android {
         resValue "string", "app_name", pname
     }
 
+    signingConfigs {
+        release {
+            storeFile file("../release-key.jks")
+            storePassword System.getenv("KEYSTORE_PASSWORD")
+            keyPassword System.getenv("KEYSTORE_PASSWORD")
+            keyAlias 'release-key'
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+        }
+    }
+
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'
